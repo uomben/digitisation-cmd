@@ -15,6 +15,8 @@ This set of script templates and scripts are derived from workflows I have devel
 3. Run make.bat to compile the CMD scripts into the "cmd" folder
 4. \[Optional\] Move the CMD files to your preferred location
 
+Sample image/xmp files for testing can be downloaded from [https://files.digitisation.unimelb.edu.au/github/windows-cmd/](https://files.digitisation.unimelb.edu.au/github/windows-cmd/)
+
 ## Usage
 Drag a folder of TIF images onto a script or call the script with the target folder path as an argument.
 
