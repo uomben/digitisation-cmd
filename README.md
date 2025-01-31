@@ -1,6 +1,6 @@
 # Windows CMD script templates for digitisation worklfows.
 This set of script templates and scripts are derived from workflows I have developed for the University Digitisation Center at The university of Melbourne.   They are designed to work as "drag and drop" scripts taking a single TIF file or a folder of TIF files as an input.  The primary goal of this project was to develop a complete post-processing pipeline for a folder of images including:
-- create a copy of the folder as a backup in case something goes wrong
+- creating a copy of the folder as a backup in case something goes wrong
 - organising images into subfolders by filetype
 - renaming files with new filenames derived from the folder name
 - creating JPEG derivatives and thumbnails
