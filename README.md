@@ -11,7 +11,7 @@ This set of script templates and scripts are derived from workflows I have devel
 
 ## Installation
 1. Install 3rd party utilies (see our blog page ["Command line tools for digitisation"](https://blogs.unimelb.edu.au/digitisation-lab/command-line-tools-for-digitisation/) for now).
-2. Edit the xxx_header.txt files in the "templates" folder with the application and folder paths for your environment, creating additional folders if required.
+2. Edit the xxx_header.txt files in the "templates" folder with the application and folder paths for your environment and create additional folders if required.
 3. Run make.bat to compile the CMD scripts into the "cmd" folder
 4. \[Optional\] Move the CMD files to your preferred location
 
