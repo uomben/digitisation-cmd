@@ -1,0 +1,50 @@
+
+:: Remove unwanted files
+@rmdir /s /q "%SourceFolder%\Color" 2> nul
+@rmdir /s /q "%SourceFolder%\thumb" 2> nul
+@rmdir /s /q "%SourceFolder%\tmpFilename" 2> nul
+@rmdir /s /q "%SourceFolder%\undo" 2> nul
+@del "%SourceFolder%\*.OIP" 2> nul
+@del "%SourceFolder%\*.OIS" 2> nul
+@del "%SourceFolder%\*.OJP" 2> nul
+@del "%SourceFolder%\*.OJS" 2> nul
+
+@echo Rename Images files 
+%~d1
+cd "%SourceFolder%"
+
+:: Copy source files to Undo folder
+REM  This could possibly be done with EXIFTool (in the same line as embedding metadata?).  Need to check with filename sorting on CIFS 
+
+@echo Rename TIF files
+@set /a counter=1
+@set counterFormatted=0001
+@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
+  @set counterFormatted=0000!counter!
+  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.tif"
+  @set /a counter = !counter! + 1
+)
+
+@echo Rename DNG files
+@set /a counter=1
+@set counterFormatted=00001
+@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
+  @set counterFormatted=0000!counter!
+  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.dng"
+  @set /a counter = !counter! + 1
+)
+
+@echo Rename JPG files
+@set /a counter=1
+@set counterFormatted=00001
+@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @set counterFormatted=0000!counter!
+  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.jpg"
+  @set /a counter = !counter! + 1
+)
+
+@echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file
+
+%exiftool% -directory="%DestinationFolder%\tif" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.tif" 
+%exiftool% -directory="%DestinationFolder%\dng" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.dng" 
+%exiftool% -directory="%DestinationFolder%\jpg" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.jpg" 
