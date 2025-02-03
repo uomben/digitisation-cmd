@@ -1,0 +1,3 @@
+
+:: Make JPEG derivatives
+%magick% "%%a[0]" -auto-orient -resample 200 -unsharp 1.5x1+0.7+0.02 -shave 1 -colorspace sRGB -profile "%sRGB%"-depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
