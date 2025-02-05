@@ -9,16 +9,21 @@ for /f "tokens=*" %%G in ('robocopy "%INdir%" NULL *Header.txt /S /L /NDL /NC /T
   set "tmp=%%~nG"
   set "prefix=!tmp:~0,4!"
   set "header=%%~nxG"
+  set "composite=!tmp:~0,-7!
 
   :: Create batch files combining the header and individual scripts
   for /f "tokens=*" %%H in ('robocopy "%INdir%" NULL !prefix!*.txt /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS /XF "!header!"') do (
       type "%%G" > %OUTdir%\%%~nH.bat
       type "%%~H" >> %OUTdir%\%%~nH.bat
     )
+
+  :: Create batch files combining the header and individual scripts into a single script
+  type "%%G" > %OUTdir%\!composite!.bat
+  for /f "tokens=*" %%H in ('robocopy "%INdir%" NULL !prefix!*.txt /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS /XF "!header!"') do (
+      type "%%~H" >> %OUTdir%\!composite!.bat
+    )
 	
   :: Create batch file for debugging variables
   type %%G > %OUTdir%\headers\!prefix!_VariableCheck.bat
   echo pause >> %OUTdir%\headers\!prefix!_VariableCheck.bat
 )
-
-

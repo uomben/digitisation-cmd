@@ -37,14 +37,16 @@ REM  This could possibly be done with EXIFTool (in the same line as embedding me
 @echo Rename JPG files
 @set /a counter=1
 @set counterFormatted=00001
-@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
   @set counterFormatted=0000!counter!
-  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.jpg"
+  @rename "%%F" "%ItemID%-!counterFormatted:~-5!.jpg"
   @set /a counter = !counter! + 1
 )
 
-@echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file
+@echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file if the sidecar file exists
 
-%exiftool% -directory="%DestinationFolder%\tif" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.tif" 
-%exiftool% -directory="%DestinationFolder%\dng" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.dng" 
-%exiftool% -directory="%DestinationFolder%\jpg" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original "%SourceFolder%\*.jpg" 
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.tif *.dng *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  IF EXIST "%SourceFolder%\%ItemID%.xmp" (
+     %exiftool% -directory="%DestinationFolder%\%%~xF" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original %%F ) ELSE (
+	 %exiftool% -directory="%DestinationFolder%\%%~xF"  -overwrite_original %%F )
+  )

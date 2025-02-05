@@ -1,0 +1,3 @@
+Set a variable from a command (e.g. read metadata field from XMP file using EXIFTool)
+
+FOR /F "tokens=*" %%G IN ('command') do (SET VAR=%%G)

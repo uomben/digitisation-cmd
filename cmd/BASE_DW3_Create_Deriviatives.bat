@@ -5,13 +5,12 @@ setlocal ENABLEDELAYEDEXPANSION
 set 7zip=C:\Tools\7zip\7za.exe
 set b64=C:\Tools\b64\b64.exe
 set EXIFTool=c:\Tools\EXIFTool\EXIFTool.exe
-set EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt
 set ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe
 set ffplay=C:\Tools\ffmpeg\bin\ffplay.exe
 set hashdeep=C:\Tools\hashdeep\hasdeep.exe
+set hashit=c:\tools\hashit\hashit.exe
 set ghostscript="C:\Program Files\gs\gs10.00.0\bin\gswin64.exe"
 set magick=magick
-set sRGB=c:\tools\ICC\sRGB_v4_ICC_preference.icc
 set pdftk=c:\Tools\pdftk\pdftk.exe
 set qpdf=C:\Tools\qpdf\bin\qpdf.exe
 set tesseract=C:\Tools\Tesseract\Tesseract.exe
@@ -23,13 +22,18 @@ set wget=C:\Tools\wget\wget.exe
 set ItemID=%~n1
 set SourceFolder=%~1
 set ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%
-set DestinationFolder=%~1
+set DestinationFolder=%SourceFolder%
 set TempFolder=c:\temp\%~n1
 set OCRin=%TempFolder%\ocr
-set OCRout=%~1
+set OCRout=%DestinationFolder%
 set SCANin=c:\scans\raw
 set SCANout=c:\scans\export
 set UndoFolder=%~dp1UNDO\%~n1
+
+:: Helper files
+set XMPsidecar=%SourceFolder%\%ItemID%.xmp
+set sRGBprofile=c:\tools\ICC\sRGB_v4_ICC_preference.icc
+set EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt
 
 :: Default imageprocessing parameters
 
@@ -39,7 +43,7 @@ set JPEGresize=10240
 
 ::Thumbnail
 set THUMBresize=512
-set THUMBquality=20
+set THUMBquality=25
 
 :: OCR maximum size
 set OCRresize=8000
@@ -49,6 +53,7 @@ set PDFquality=35
 set PDFcompress=JPEG
 set PDFresample=200
 set PDFresize=3172
+set PDFheight=3172
 
 
 @echo Script variables:
@@ -62,3 +67,18 @@ set PDFresize=3172
 @echo OCRout            - %OCRout%
 @echo UndoFolder        - %UndoFolder%
 @echo ArchiveFolder     - %ArchiveFolder%
+
+:: Make JPEG derivatives
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\jpg\%%~na.jpg"
+)
+
+:: Make Thumbnails for TIF and PDF
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+)
+
+:: Make Thumbnails for DNG (additional  -auto-level step)
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+)
