@@ -14,7 +14,7 @@
 cd "%SourceFolder%"
 
 :: Copy source files to Undo folder
-REM  This could possibly be done with EXIFTool (in the same line as embedding metadata?).  Need to check with filename sorting on CIFS 
+REM  This could possibly be done with exiftool (in the same line as embedding metadata?).  Need to check with filename sorting on CIFS 
 
 @echo Rename TIF files
 @set /a counter=1
@@ -46,7 +46,7 @@ REM  This could possibly be done with EXIFTool (in the same line as embedding me
 @echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file if the sidecar file exists
 
 @for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.tif *.dng *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
-  IF EXIST "%SourceFolder%\%ItemID%.xmp" (
-     %exiftool% -directory="%DestinationFolder%\%%~xF" -TagsFromFile "%SourceFolder%\%ItemID%.xmp" -overwrite_original %%F ) ELSE (
+  IF EXIST "%XMPsidecar%" (
+     %exiftool% -directory="%DestinationFolder%\%%~xF" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
 	 %exiftool% -directory="%DestinationFolder%\%%~xF"  -overwrite_original %%F )
   )

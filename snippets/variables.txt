@@ -1,3 +1,10 @@
 Set a variable from a command (e.g. read metadata field from XMP file using EXIFTool)
 
 FOR /F "tokens=*" %%G IN ('command') do (SET VAR=%%G)
+echo %var%
+
+Use -s3 argument with EXIFTool to output the value without the field name.
+e.g. Get the bitdepth for mixed mode images to retain the original bitdepth when processing images to PDF.
+
+Set a variable from an image metadata field.
+FOR /F "tokens=*" %%G IN ('%exiftool% -s3 -BitsPerSample %1') do (SET VAR=%%G)
