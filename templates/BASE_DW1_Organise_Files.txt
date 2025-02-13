@@ -9,9 +9,10 @@
 @del "%SourceFolder%\*.OJP" 2> nul
 @del "%SourceFolder%\*.OJS" 2> nul
 
+:: Run commands from the source folder
 @echo Rename Images files 
-%~d1
-cd "%SourceFolder%"
+@%~d1
+@cd "%SourceFolder%"
 
 :: Copy source files to Undo folder
 REM  This could possibly be done with exiftool (in the same line as embedding metadata?).  Need to check with filename sorting on CIFS 
@@ -42,11 +43,29 @@ REM  This could possibly be done with exiftool (in the same line as embedding me
   @rename "%%F" "%ItemID%-!counterFormatted:~-5!.jpg"
   @set /a counter = !counter! + 1
 )
-
+:: Relocate files and embed metadata
 @echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file if the sidecar file exists
 
-@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.tif *.dng *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+:: Move TIFs
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%DestinationFolder%\tif" (mkdir "%DestinationFolder%\tif")
   IF EXIST "%XMPsidecar%" (
-     %exiftool% -directory="%DestinationFolder%\%%~xF" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
-	 %exiftool% -directory="%DestinationFolder%\%%~xF"  -overwrite_original %%F )
+     %exiftool% -directory="%DestinationFolder%\tif" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
+	 move %%F "%DestinationFolder%\tif" )
+  )
+  
+:: Move JPGs
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%DestinationFolder%\jpg" (mkdir "%DestinationFolder%\jpg")
+  IF EXIST "%XMPsidecar%" (
+     %exiftool% -directory="%DestinationFolder%\jpg" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
+	 move %%F "%DestinationFolder%\jpg" )
+  )
+
+:: Move DNGs
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%DestinationFolder%\dng" (mkdir "%DestinationFolder%\dng")
+  IF EXIST "%XMPsidecar%" (
+     %exiftool% -directory="%DestinationFolder%\dng" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
+	 move %%F "%DestinationFolder%\dng" )
   )

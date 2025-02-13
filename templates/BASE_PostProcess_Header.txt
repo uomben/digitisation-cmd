@@ -26,7 +26,7 @@
 
 :: Helper files
 @set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
-@set "sRGBprofile=c:\tools\ICC\sRGB_v4_ICC_preference.icc"
+@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
 
 ::=============================================
 :: Local variables
