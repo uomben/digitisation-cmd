@@ -152,3 +152,100 @@ REM  This could possibly be done with exiftool (in the same line as embedding me
      %exiftool% -directory="%DestinationFolder%\dng" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
 	 move %%F "%DestinationFolder%\dng" )
   )
+:: OCR processes
+
+:: Prepare temp and output directory
+@mkdir %OCRin%  2> nul
+@mkdir %OCRout%  2> nul
+
+for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+:: Clean BW image for OCR
+%magick% ^( "%%a[0]" -auto-orient -colorspace gray -type grayscale -contrast-stretch 0 ^) ^( -clone 0 -colorspace gray -negate -lat 15x15+10%% -contrast-stretch 0 ^) -compose copy_opacity -composite -fill "white" -opaque none -alpha Off -sharpen 0x1 "%OCRin%\%%~na_bw.tif"
+
+:: OCR image - PDF is text only, no image
+%tesseract% "%OCRin%\%%~na_bw.tif" "%OCRin%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
+
+:: Make Image PDF for display - set output size/quality here
+%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
+
+:: Merge text and image PDF
+%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
+)
+@echo Merge PDF
+%pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
+
+@echo Embed metadata in merged PDF file from XMP
+IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined.pdf" 
+
+@echo Linearise PDF 
+%qpdf%  --linearize "%OCRin%\%ItemID%_combined.pdf" "%OCRout%\%ItemID%.pdf"
+
+@echo Make thumbnail of PDF
+:: Relocated to Create Derivatives sub-template
+
+robocopy "%TempFolder%" "%DestinationFolder%\thumb_pdf" "%ItemID%.jpg" /MOV /W:5
+
+@echo Move non-image outputs into filetype-based subfolders
+
+%exiftool% -directory="%OCRout%\%ItemID%_alto_xml" -overwrite_original "%OCRin%\*.xml" 
+%exiftool% -directory="%OCRout%\%ItemID%_txt" -overwrite_original "%OCRin%\*.txt" 
+%exiftool% -directory="%OCRout%\%ItemID%_hocr" -overwrite_original "%OCRin%\*.hocr"
+
+@echo Create a composite text file
+@del "%DestinationFolder%\%ItemID%_ocr.txt" 2> nul
+FOR %%f IN ("%OCRout%\%ItemID%_txt\*.txt") DO type %%f >> "%OCRout%\%ItemID%_ocr.txt"
+
+
+@echo Cleanup temporary files
+
+:: skip cleanup during testing to allow checking of intermediate files
+goto skipcleanup
+rmdir /s /q %OCRin%
+
+:skipcleanup
+
+:: Pause to debug screen output during development
+pause
+
+:: Make JPEG derivatives
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\jpg\%%~na.jpg"
+)
+
+:: Make Thumbnails for TIF and PDF
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+)
+
+:: Make Thumbnails for DNG (additional  -auto-level step)
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+):: list files
+@echo Post-processing data gathering
+robocopy "%DestinationFolder%" NULL /S /L /NDL /NC /LOG:"%TempFolder%\%ItemID%_files.txt" /TEE /NJH /NJS /BYTES /NODD /XD meta thumb*
+
+robocopy "%TempFolder%" "%DestinationFolder%\meta" "%ItemID%_files.txt" /w:5
+
+:: Compress non-PDF per-image OCR outputs
+
+@echo Create a tar.gz for per-image OCR outputs 
+tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" && rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
+tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" && rmdir /s /q "%OCRout%\%ItemID%_hocr"
+tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" && rmdir /s /q "%OCRout%\%ItemID%_txt"
+
+:: Collect EXIF metadata and checksums
+@echo Collect EXIF metadata
+
+@del "%DestinationFolder%\meta\%ItemID%_exif.txt"
+%exiftool% -m -s -r -q -p "%EXIFReadTemplate%" "%DestinationFolder%" > "%TempFolder%\%ItemID%_exif.txt" 
+robocopy %TempFolder% "%DestinationFolder%\meta" %ItemID%_exif.txt /MOV
+
+@echo Collect checksums
+
+@del "%DestinationFolder%\%ItemID%_chksum.xml"
+%hashdeep% -c md5,sha256 -r -d "%DestinationFolder%\*.*" > "%TempFolder%\%ItemID%_chksum.xml"
+robocopy "%TempFolder%" "%DestinationFolder%" %ItemID%_chksum.xml /MOV
+
+@echo Cleanup temp folder
+:: disabled for testing/debugging
+:: rmdir /s /q "%TempFolder%"
