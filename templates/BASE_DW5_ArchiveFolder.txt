@@ -7,9 +7,17 @@ robocopy "%TempFolder%" "%DestinationFolder%\meta" "%ItemID%_files.txt" /w:5
 :: Compress non-PDF per-image OCR outputs
 
 @echo Create a tar.gz for per-image OCR outputs 
-tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" && rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
-tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" && rmdir /s /q "%OCRout%\%ItemID%_hocr"
-tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" && rmdir /s /q "%OCRout%\%ItemID%_txt"
+:: ALTO XML
+tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" 
+rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
+
+:: hOCR
+tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" 
+rmdir /s /q "%OCRout%\%ItemID%_hocr"
+
+:: Text
+tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" 
+rmdir /s /q "%OCRout%\%ItemID%_txt"
 
 :: Collect EXIF metadata and checksums
 @echo Collect EXIF metadata

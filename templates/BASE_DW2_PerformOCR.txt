@@ -13,7 +13,7 @@ for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL 
 %tesseract% "%OCRin%\%%~na_bw.tif" "%OCRin%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
 
 :: Make Image PDF for display - set output size/quality here
-%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
+%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
 
 :: Merge text and image PDF
 %pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"

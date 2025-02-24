@@ -86,13 +86,3 @@
 for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
     %magick% "%%a[0]" -auto-orient -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\jpg\%%~na.jpg"
 )
-
-:: Make Thumbnails for TIF and PDF
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
-)
-
-:: Make Thumbnails for DNG (additional  -auto-level step)
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
-)

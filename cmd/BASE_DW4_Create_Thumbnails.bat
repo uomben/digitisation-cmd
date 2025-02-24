@@ -81,32 +81,18 @@
 @echo ArchiveFolder     - %ArchiveFolder%
 
 
-:: list files
-@echo Post-processing data gathering
-robocopy "%DestinationFolder%" NULL /S /L /NDL /NC /LOG:"%TempFolder%\%ItemID%_files.txt" /TEE /NJH /NJS /BYTES /NODD /XD meta thumb*
 
-robocopy "%TempFolder%" "%DestinationFolder%\meta" "%ItemID%_files.txt" /w:5
+:: Make Thumbnails for TIF
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_tif\%%~na.jpg"
+)
 
-:: Compress non-PDF per-image OCR outputs
+:: Make Thumbnails for PDF
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_pdf\%%~na.jpg"
+)
 
-@echo Create a tar.gz for per-image OCR outputs 
-tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" && rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
-tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" && rmdir /s /q "%OCRout%\%ItemID%_hocr"
-tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" && rmdir /s /q "%OCRout%\%ItemID%_txt"
-
-:: Collect EXIF metadata and checksums
-@echo Collect EXIF metadata
-
-@del "%DestinationFolder%\meta\%ItemID%_exif.txt"
-%exiftool% -m -s -r -q -p "%EXIFReadTemplate%" "%DestinationFolder%" > "%TempFolder%\%ItemID%_exif.txt" 
-robocopy %TempFolder% "%DestinationFolder%\meta" %ItemID%_exif.txt /MOV
-
-@echo Collect checksums
-
-@del "%DestinationFolder%\%ItemID%_chksum.xml"
-%hashdeep% -c md5,sha256 -r -d "%DestinationFolder%\*.*" > "%TempFolder%\%ItemID%_chksum.xml"
-robocopy "%TempFolder%" "%DestinationFolder%" %ItemID%_chksum.xml /MOV
-
-@echo Cleanup temp folder
-:: disabled for testing/debugging
-:: rmdir /s /q "%TempFolder%"
+:: Make Thumbnails for DNG (additional  -auto-level step)
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_dng\%%~na.jpg"
+)

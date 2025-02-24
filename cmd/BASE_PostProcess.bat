@@ -166,7 +166,7 @@ for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL 
 %tesseract% "%OCRin%\%%~na_bw.tif" "%OCRin%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
 
 :: Make Image PDF for display - set output size/quality here
-%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
+%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
 
 :: Merge text and image PDF
 %pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
@@ -212,14 +212,19 @@ for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif /S /L /NDL
     %magick% "%%a[0]" -auto-orient -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\jpg\%%~na.jpg"
 )
 
-:: Make Thumbnails for TIF and PDF
+:: Make Thumbnails for TIF
 for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_tif\%%~na.jpg"
+)
+
+:: Make Thumbnails for PDF
+for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_pdf\%%~na.jpg"
 )
 
 :: Make Thumbnails for DNG (additional  -auto-level step)
 for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%"-depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_%%~xa\%%~na.jpg"
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_dng\%%~na.jpg"
 ):: list files
 @echo Post-processing data gathering
 robocopy "%DestinationFolder%" NULL /S /L /NDL /NC /LOG:"%TempFolder%\%ItemID%_files.txt" /TEE /NJH /NJS /BYTES /NODD /XD meta thumb*
@@ -229,9 +234,17 @@ robocopy "%TempFolder%" "%DestinationFolder%\meta" "%ItemID%_files.txt" /w:5
 :: Compress non-PDF per-image OCR outputs
 
 @echo Create a tar.gz for per-image OCR outputs 
-tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" && rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
-tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" && rmdir /s /q "%OCRout%\%ItemID%_hocr"
-tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" && rmdir /s /q "%OCRout%\%ItemID%_txt"
+:: ALTO XML
+tar -cvzf "%OCRout%\%ItemID%_alto_xml.tar.gz" -C "%OCRout%" "%ItemID%_ocr_alto_xml" 
+rmdir /s /q "%OCRout%\%ItemID%_alto_xml"
+
+:: hOCR
+tar -cvzf "%OCRout%\%ItemID%_hocr.tar.gz" -C "%OCRout%" "%ItemID%_ocr_hocr" 
+rmdir /s /q "%OCRout%\%ItemID%_hocr"
+
+:: Text
+tar -cvzf "%OCRout%\%ItemID%_txt.tar.gz" -C "%OCRout%" "%ItemID%_ocr_txt" 
+rmdir /s /q "%OCRout%\%ItemID%_txt"
 
 :: Collect EXIF metadata and checksums
 @echo Collect EXIF metadata
