@@ -61,12 +61,14 @@
 
 :: PDF display
 @set "PDFquality=35"
+:: Compress options: 
+:: Colour/Greyscale: JPEG, JPEG2000, ZIP
+:: Bitonal BW: Group4
 @set "PDFcompress=JPEG"
 @set "PDFresample=200"
 @set "PDFresize=3172"
 @set "PDFheight=3172"
 
-:: Display local variables for debugging
 :: Display local variables for debugging
 @echo Script variables:
 @echo ItemID            - %ItemID%
@@ -98,7 +100,7 @@
 @cd "%SourceFolder%"
 
 :: Copy source files to Undo folder
-REM  This could possibly be done with exiftool (in the same line as embedding metadata?).  Need to check with filename sorting on CIFS 
+robocopy "%SourceFolder%" "%UndoFolder%" *.* /s /w:5
 
 @echo Rename TIF files
 @set /a counter=1
