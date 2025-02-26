@@ -167,20 +167,30 @@ for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL 
 :: OCR image - PDF is text only, no image
 %tesseract% "%OCRin%\%%~na_bw.tif" "%OCRin%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
 
-:: Make Image PDF for display - set output size/quality here
+:: Make Colour Image PDF for display - set output size/quality here
 %magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
 
-:: Merge text and image PDF
-%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
-)
-@echo Merge PDF
-%pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
+:: Make BW Image PDF for display - set output size/quality here
+%magick% "%OCRin%\%%~na_bw.tif" -threshold 50 -depth 1 -compress Group4 "%OCRin%\%%~na_bw.pdf"
 
-@echo Embed metadata in merged PDF file from XMP
+:: Merge text and colour image PDF
+%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
+
+:: Merge text and colour image PDF
+%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_bw_merged.pdf"
+
+)
+@echo Merge Colour and BW PDF
+%pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
+%pdftk% "%OCRin%\%ItemID%*_bw_merged.pdf" cat output "%OCRin%\%ItemID%_bw_combined.pdf" dont_ask
+
+@echo Embed metadata in merged PDF files from XMP
 IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined.pdf" 
+IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_bw_combined.pdf" 
 
 @echo Linearise PDF 
 %qpdf%  --linearize "%OCRin%\%ItemID%_combined.pdf" "%OCRout%\%ItemID%.pdf"
+%qpdf%  --linearize "%OCRin%\%ItemID%_bw_combined.pdf" "%OCRout%\%ItemID%_bw.pdf"
 
 @echo Make thumbnail of PDF
 :: Relocated to Create Derivatives sub-template
