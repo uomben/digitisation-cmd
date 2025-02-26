@@ -21,19 +21,20 @@ for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL 
 :: Merge text and colour image PDF
 %pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
 
-:: Merge text and colour image PDF
-%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_bw_merged.pdf"
+:: Merge text and BW image PDF
+%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_merged_bw.pdf"
 
 )
-@echo Merge Colour and BW PDF
+@echo Merge Colour and BW PDF pages
 %pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
-%pdftk% "%OCRin%\%ItemID%*_bw_merged.pdf" cat output "%OCRin%\%ItemID%_bw_combined.pdf" dont_ask
+%pdftk% "%OCRin%\%ItemID%*_merged_bw.pdf" cat output "%OCRin%\%ItemID%_combined_bw.pdf" dont_ask
 
 @echo Embed metadata in merged PDF files from XMP
 IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined.pdf" 
-IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_bw_combined.pdf" 
+IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined_bw.pdf" 
 
 @echo Linearise PDF 
+:: ...without stripping the newly added metadata!!!
 %qpdf%  --linearize "%OCRin%\%ItemID%_combined.pdf" "%OCRout%\%ItemID%.pdf"
 %qpdf%  --linearize "%OCRin%\%ItemID%_bw_combined.pdf" "%OCRout%\%ItemID%_bw.pdf"
 
@@ -55,11 +56,9 @@ FOR %%f IN ("%OCRout%\%ItemID%_txt\*.txt") DO type %%f >> "%OCRout%\%ItemID%_ocr
 
 @echo Cleanup temporary files
 
-:: skip cleanup during testing to allow checking of intermediate files
-goto skipcleanup
+:: uncomment goto to skip cleanup during testing to allow checking of intermediate files
+:: goto skipcleanup
 rmdir /s /q %OCRin%
 
 :skipcleanup
 
-:: Pause to debug screen output during development
-pause
