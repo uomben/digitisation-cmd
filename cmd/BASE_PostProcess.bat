@@ -1,52 +1,8 @@
 @setlocal ENABLEDELAYEDEXPANSION
 
-::Run CMD from c:\temp unless otherwise specified
-@c:
-@cd\temp
-
 ::=============================================
-:: Global variables
+:: Customisable processing presets 
 ::=============================================
-:: Utililty paths
-@set "7zip=C:\Tools\7zip\7za.exe"
-@set "b64=C:\Tools\b64\b64.exe"
-@set "exiftool=c:\Tools\EXIFTool\EXIFTool.exe"
-@set "ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe"
-@set "ffplay=C:\Tools\ffmpeg\bin\ffplay.exe"
-@set "hashdeep=C:\Tools\hashdeep\hasdeep.exe"
-@set "hashit=c:\tools\hashit\hashit.exe"
-@set "ghostscript="C:\Program Files\gs\gs10.00.0\bin\gswin64.exe""
-@set "magick=magick"
-@set "pdftk=c:\Tools\pdftk\pdftk.exe"
-@set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
-@set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
-@set "vips=C:\Tools\vips\bin\vips.exe"
-@set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
-@set "wget=C:\Tools\wget\wget.exe"
-
-:: Helper files
-@set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
-@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
-
-::=============================================
-:: Local variables
-::=============================================
-:: IDs and folder paths
-@set "ItemID=%~n1"
-@set "SourceFolder=%~1"
-@set "ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%"
-@set "DestinationFolder=%SourceFolder%"
-@set "TempFolder=c:\temp\%~n1"
-@set "OCRin=%TempFolder%\ocr"
-@set "OCRout=%DestinationFolder%"
-@set "SCANin=c:\scans\raw"
-@set "SCANout=c:\scans\export"
-@set "UndoFolder=%~dp1UNDO\%~n1"
-
-:: Helper files
-@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
-
-:: Default imageprocessing parameters
 
 :: JPEG derivative
 @set "JPEGquality=30"
@@ -69,6 +25,47 @@
 @set "PDFresize=3172"
 @set "PDFheight=3172"
 
+::=============================================
+:: Local variables
+::=============================================
+:: IDs and folder paths
+@set "ItemID=%~n1"
+@set "SourceFolder=%~1"
+@set "ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%"
+@set "DestinationFolder=%SourceFolder%"
+@set "TempFolder=c:\temp\%~n1"
+@set "OCRin=%TempFolder%\ocr"
+@set "OCRout=%DestinationFolder%"
+@set "SCANin=c:\scans\raw"
+@set "SCANout=c:\scans\export"
+@set "UndoFolder=%~dp1UNDO\%~n1"
+
+:: Helper files
+@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
+@set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
+@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
+
+::=============================================
+:: Global variables
+::=============================================
+:: Utililty paths
+@set "7zip=C:\Tools\7zip\7za.exe"
+@set "b64=C:\Tools\b64\b64.exe"
+@set "exiftool=c:\Tools\EXIFTool\EXIFTool.exe"
+@set "ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe"
+@set "ffplay=C:\Tools\ffmpeg\bin\ffplay.exe"
+@set "hashdeep=C:\Tools\hashdeep\hasdeep.exe"
+@set "hashit=c:\tools\hashit\hashit.exe"
+@set "ghostscript="C:\Program Files\gs\gs10.00.0\bin\gswin64.exe""
+@set "magick=magick"
+@set "pdftk=c:\Tools\pdftk\pdftk.exe"
+@set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
+@set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
+@set "vips=C:\Tools\vips\bin\vips.exe"
+@set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
+@set "wget=C:\Tools\wget\wget.exe"
+
+
 :: Display local variables for debugging
 @echo Script variables:
 @echo ItemID            - %ItemID%
@@ -82,7 +79,9 @@
 @echo UndoFolder        - %UndoFolder%
 @echo ArchiveFolder     - %ArchiveFolder%
 
-
+::Run CMD from c:\temp unless otherwise specified
+@c:
+@cd\temp
 
 :: Remove unwanted files
 @rmdir /s /q "%SourceFolder%\Color" 2> nul
@@ -176,19 +175,20 @@ for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL 
 :: Merge text and colour image PDF
 %pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
 
-:: Merge text and colour image PDF
-%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_bw_merged.pdf"
+:: Merge text and BW image PDF
+%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_merged_bw.pdf"
 
 )
-@echo Merge Colour and BW PDF
+@echo Merge Colour and BW PDF pages
 %pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
-%pdftk% "%OCRin%\%ItemID%*_bw_merged.pdf" cat output "%OCRin%\%ItemID%_bw_combined.pdf" dont_ask
+%pdftk% "%OCRin%\%ItemID%*_merged_bw.pdf" cat output "%OCRin%\%ItemID%_combined_bw.pdf" dont_ask
 
 @echo Embed metadata in merged PDF files from XMP
 IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined.pdf" 
-IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_bw_combined.pdf" 
+IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined_bw.pdf" 
 
 @echo Linearise PDF 
+:: ...without stripping the newly added metadata!!!
 %qpdf%  --linearize "%OCRin%\%ItemID%_combined.pdf" "%OCRout%\%ItemID%.pdf"
 %qpdf%  --linearize "%OCRin%\%ItemID%_bw_combined.pdf" "%OCRout%\%ItemID%_bw.pdf"
 
@@ -210,14 +210,12 @@ FOR %%f IN ("%OCRout%\%ItemID%_txt\*.txt") DO type %%f >> "%OCRout%\%ItemID%_ocr
 
 @echo Cleanup temporary files
 
-:: skip cleanup during testing to allow checking of intermediate files
-goto skipcleanup
+:: uncomment goto to skip cleanup during testing to allow checking of intermediate files
+:: goto skipcleanup
 rmdir /s /q %OCRin%
 
 :skipcleanup
 
-:: Pause to debug screen output during development
-pause
 
 :: Make JPEG derivatives
 for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (

@@ -1,52 +1,8 @@
 @setlocal ENABLEDELAYEDEXPANSION
 
-::Run CMD from c:\temp unless otherwise specified
-@c:
-@cd\temp
-
 ::=============================================
-:: Global variables
+:: Customisable processing presets 
 ::=============================================
-:: Utililty paths
-@set "7zip=C:\Tools\7zip\7za.exe"
-@set "b64=C:\Tools\b64\b64.exe"
-@set "exiftool=c:\Tools\EXIFTool\EXIFTool.exe"
-@set "ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe"
-@set "ffplay=C:\Tools\ffmpeg\bin\ffplay.exe"
-@set "hashdeep=C:\Tools\hashdeep\hasdeep.exe"
-@set "hashit=c:\tools\hashit\hashit.exe"
-@set "ghostscript="C:\Program Files\gs\gs10.00.0\bin\gswin64.exe""
-@set "magick=magick"
-@set "pdftk=c:\Tools\pdftk\pdftk.exe"
-@set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
-@set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
-@set "vips=C:\Tools\vips\bin\vips.exe"
-@set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
-@set "wget=C:\Tools\wget\wget.exe"
-
-:: Helper files
-@set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
-@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
-
-::=============================================
-:: Local variables
-::=============================================
-:: IDs and folder paths
-@set "ItemID=%~n1"
-@set "SourceFolder=%~1"
-@set "ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%"
-@set "DestinationFolder=%SourceFolder%"
-@set "TempFolder=c:\temp\%~n1"
-@set "OCRin=%TempFolder%\ocr"
-@set "OCRout=%DestinationFolder%"
-@set "SCANin=c:\scans\raw"
-@set "SCANout=c:\scans\export"
-@set "UndoFolder=%~dp1UNDO\%~n1"
-
-:: Helper files
-@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
-
-:: Default imageprocessing parameters
 
 :: JPEG derivative
 @set "JPEGquality=30"
@@ -69,6 +25,47 @@
 @set "PDFresize=3172"
 @set "PDFheight=3172"
 
+::=============================================
+:: Local variables
+::=============================================
+:: IDs and folder paths
+@set "ItemID=%~n1"
+@set "SourceFolder=%~1"
+@set "ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%"
+@set "DestinationFolder=%SourceFolder%"
+@set "TempFolder=c:\temp\%~n1"
+@set "OCRin=%TempFolder%\ocr"
+@set "OCRout=%DestinationFolder%"
+@set "SCANin=c:\scans\raw"
+@set "SCANout=c:\scans\export"
+@set "UndoFolder=%~dp1UNDO\%~n1"
+
+:: Helper files
+@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
+@set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
+@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
+
+::=============================================
+:: Global variables
+::=============================================
+:: Utililty paths
+@set "7zip=C:\Tools\7zip\7za.exe"
+@set "b64=C:\Tools\b64\b64.exe"
+@set "exiftool=c:\Tools\EXIFTool\EXIFTool.exe"
+@set "ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe"
+@set "ffplay=C:\Tools\ffmpeg\bin\ffplay.exe"
+@set "hashdeep=C:\Tools\hashdeep\hasdeep.exe"
+@set "hashit=c:\tools\hashit\hashit.exe"
+@set "ghostscript="C:\Program Files\gs\gs10.00.0\bin\gswin64.exe""
+@set "magick=magick"
+@set "pdftk=c:\Tools\pdftk\pdftk.exe"
+@set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
+@set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
+@set "vips=C:\Tools\vips\bin\vips.exe"
+@set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
+@set "wget=C:\Tools\wget\wget.exe"
+
+
 :: Display local variables for debugging
 @echo Script variables:
 @echo ItemID            - %ItemID%
@@ -82,5 +79,7 @@
 @echo UndoFolder        - %UndoFolder%
 @echo ArchiveFolder     - %ArchiveFolder%
 
-
+::Run CMD from c:\temp unless otherwise specified
+@c:
+@cd\temp
 pause 
