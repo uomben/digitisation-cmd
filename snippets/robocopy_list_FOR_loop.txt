@@ -1,0 +1,2 @@
+@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.* /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
+)
