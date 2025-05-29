@@ -24,7 +24,7 @@ def save_column_a_to_text_files():
         os.makedirs(meta_dir)
 
     sheet = model.Sheets.getByIndex(0)
-    row = 1
+    row = 2
 
     while True:
         cell_a = sheet.getCellByPosition(0, row)  # Column A
@@ -41,4 +41,4 @@ def save_column_a_to_text_files():
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
 
-        row += 1
+        row += 2
