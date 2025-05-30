@@ -6,7 +6,7 @@ from com.sun.star.sheet import XSpreadsheetDocument
 def sanitize_filename(name):
     return re.sub(r'[\\/:*?"<>|]', '_', name)
 
-def save_column_a_to_text_files():
+def save_column_a_to_text_files(*args ):
     ctx = uno.getComponentContext()
     smgr = ctx.ServiceManager
     desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
