@@ -1,0 +1,9 @@
+=CHAR(10)&"-E"&CHAR(10)&
+"-identifier="&B3&CHAR(10)&
+"-title="&D3&CHAR(10)&
+"-creator="&SUBSTITUTE(F3,"|",CHAR(10)&"-creator+=")&CHAR(10)&
+"-subject="&SUBSTITUTE(G3,"|",CHAR(10)&"-subject+=")&CHAR(10)&
+"-date="&I3&CHAR(10)&
+
+"-isbn="&SUBSTITUTE(K3,"|",CHAR(10)&"-isbn+=")&CHAR(10)&
+"-issn="&SUBSTITUTE(L3,"|",CHAR(10)&"-issn+=")&CHAR(10)

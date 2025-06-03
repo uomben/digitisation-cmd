@@ -1,0 +1,100 @@
+XMP-dc:Type
+XMP-dc:Format
+XMP-dc:Creator
+XMP-dc:Title
+XMP-dc:Description
+XMP-dc:Subject
+XMP-dc:Date
+XMP-dc:Coverage
+XMP-dc:Identifier
+XMP-dc:Source
+XMP-dc:Publisher
+
+XMP-IPTC:CodedCharacterSet (UTF8)
+XMP-IPTC:Creator (EntityWithRole Structured)
+XMP-IPTC:Contributor (EntityWithRole Structured)
+XMP-IPTC:Caption-Abstract
+XMP-IPTC:CircaDateCreated
+XMP-IPTC:ImageRegion (Structured, or XMP-mwg-rs:RegionArea)
+XMP-IPTC:ImageRegionBoundary (Structured, use relative boundary unit, shape = rectangle)
+XMP-IPTC:Field
+XMP-IPTC:Field
+XMP-IPTC:Field
+XMP-IPTC:Field
+
+XMP-IPTC:ArtworkOrObject (Structured, under consideration)
+XMP-IPTC:ArtworkCircaDateCreated 
+XMP-IPTC:ArtworkContentDescription 
+XMP-IPTC:ArtworkContributionDescription 
+XMP-IPTC:ArtworkCopyrightNotice 
+XMP-IPTC:ArtworkCreator 
+XMP-IPTC:ArtworkCreatorID 
+XMP-IPTC:ArtworkCopyrightOwnerID 
+XMP-IPTC:ArtworkCopyrightOwnerName 
+XMP-IPTC:ArtworkLicensorID 
+XMP-IPTC:ArtworkLicensorName 
+XMP-IPTC:ArtworkDateCreated 
+XMP-IPTC:ArtworkPhysicalDescription 
+XMP-IPTC:ArtworkSource 
+XMP-IPTC:ArtworkSourceInventoryNo 
+XMP-IPTC:ArtworkSourceInvURL 
+XMP-IPTC:ArtworkStylePeriod 
+XMP-IPTC:ArtworkTitle
+
+XMP-dc:Rights
+XMP-xmpRights:Marked
+XMP-xmpRights:Owner
+XMP-xmpRights:UsageTerms
+XMP-xmpRights:WebStatement
+XMP-cc:AttributionName
+XMP-cc:AttributionURL
+XMP-cc:License
+XMP-cc:Permits
+XMP-cc:Requires
+XMP-cc:DeprecatedOn
+XMP-cc:Jurisdiction
+XMP-cc:DeprecatedOn
+XMP-cc:MorePermissions
+
+XMP-prism:PublicationName
+XMP-prism:PublicationDateDate
+XMP-prism:AlternateTitleText
+XMP-prism:Edition
+XMP-prism:SeriesNumber
+XMP-prism:SeriesTitle
+XMP-prism:Volume
+XMP-prism:IssueName
+XMP-prism:IssueIdentifier
+XMP-prism:IssueType
+XMP-prism:Number
+XMP-prism:VersionIdentifier
+XMP-prism:DOI
+
+XMP-prism:UrlUrl
+XMP-pur:Copyright
+XMP-pur:CreditLine
+XMP-pur:EmbargoDate
+XMP-pur:Permissions
+XMP-pur:Restrictions
+XMP-pur:ReuseProhibited
+XMP-pur:RightsOwner
+XMP-pur:RightsAgent
+
+XMP-mwg-coll:Collections (Structured)
+XMP-mwg-coll:CollectionsCollectionName
+XMP-mwg-coll:CollectionsCollectionURI
+
+XMP-mwg-rs:RegionArea (Structured, assumes relative unit)
+XMP-mwg-rs:RegionAreaH
+XMP-mwg-rs:RegionAreaW
+XMP-mwg-rs:RegionAreaX
+XMP-mwg-rs:RegionAreaY
+
+XMP-xmpBJ:JobRef (Structured, just ID for now)
+XMP-xmpBJ:JobRefID
+XMP-xmpBJ:JobRefName
+XMP-xmpBJ:JobRefURL
+
+
+
+
