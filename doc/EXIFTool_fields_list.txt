@@ -16,11 +16,7 @@ XMP-IPTC:Contributor (EntityWithRole Structured)
 XMP-IPTC:Caption-Abstract
 XMP-IPTC:CircaDateCreated
 XMP-IPTC:ImageRegion (Structured, or XMP-mwg-rs:RegionArea)
-XMP-IPTC:ImageRegionBoundary (Structured, use relative boundary unit, shape = rectangle)
-XMP-IPTC:Field
-XMP-IPTC:Field
-XMP-IPTC:Field
-XMP-IPTC:Field
+XMP-IPTC:ImageRegionBoundary (Structured, use relative boundary unit, shape = rectangle ... or use XMP-mwg-rs(?))
 
 XMP-IPTC:ArtworkOrObject (Structured, under consideration)
 XMP-IPTC:ArtworkCircaDateCreated 
