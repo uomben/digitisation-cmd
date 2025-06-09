@@ -41,4 +41,4 @@ def save_column_a_to_text_files(*args ):
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
 
-        row += 2
+        row += 1

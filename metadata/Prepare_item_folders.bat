@@ -4,7 +4,7 @@
 :: Customisable processing presets 
 ::=============================================
 @set "SourceFolder=%~dp0meta"
-@set "DestinationFolder=C:\SCANS\ITEMS"
+@set "DestinationFolder=%~dp0ITEMS"
 @set "CompletedFolder=%~dp0done"
 
 
@@ -18,12 +18,12 @@
 
 @cd /d c:\temp
 
-:: create XMP files and move the text files to the "completed" folder.
-:: create desitnation folders if they don't exist
+:: create XMP files and move the text files to the "completed" folder whlie debugging, otherwise just delete them.
+:: create destination folders if they don't exist
 
 @for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.txt /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
 
-	%exiftool% -@ %%F -o "%DestinationFolder%\%%~nF\%%~nF.xmp"
+	%exiftool% -@ %%F -o "%DestinationFolder%\%%~nF\%%~nF.xmp" -k
 	robocopy "%SourceFolder%" "%CompletedFolder%" %%~nxF /mov /NJH /NJS 
 
 )
