@@ -5,7 +5,7 @@ This set of script templates and scripts are derived from workflows I have devel
 - renaming files with new filenames derived from the folder name
 - creating JPEG derivatives and thumbnails
 - performing optical charater recognition with outputs of a linearised multi-page PDF and text file, and per-image text, alto XML and hOCR files
-- embedding metadata from a metadata sidecar file (a separate pproject to develop a tool to create this XMP file is in the early stages of development) into all image formats.
+- embedding metadata from a metadata sidecar file into all image formats. (see Embedding Metadata below)
 - collecting EXIF metadata from all files
 - creating checksums of all files
 
@@ -21,3 +21,11 @@ Sample image/xmp files for testing can be downloaded from [https://files.digitis
 Drag a folder of TIF images onto a script or call the script with the target folder path as an argument.
 
 Additional documentation will be prepared as the project progresses but for now it's assumed that you have some basic knowledge of CMD scripts.
+
+## Embedding Metadata
+The Metadata folder contains a prototype tool for generating XMP sidecar files. It consists of a LibreOffice Calc spreadsheet that can be configured to:
+ - map your metadata a selection of embeddable metadata fields
+ - calculate the EXIFTool comandline arguments to embed the metadata
+ - export the EXIFTool arguments to individual text files
+
+A commandline script then converts these text files into XMP files within an item-level folder.  This is intended to be run as a pre-digitisation process, settinmg up the item-level folders for the CMD processing scripts. It can be run at any time priot to embedding/upadting the metadata into your image files.  More documentation to come...
