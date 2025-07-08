@@ -80,5 +80,5 @@
 @echo ArchiveFolder     - %ArchiveFolder%
 
 ::Run CMD from c:\temp unless otherwise specified
-@c:
-@cd\temp
+
+@cd /d c:\temp
