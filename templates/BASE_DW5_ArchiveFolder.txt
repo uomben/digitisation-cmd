@@ -31,7 +31,3 @@ robocopy %TempFolder% "%DestinationFolder%\meta" %ItemID%_exif.txt /MOV
 @del "%DestinationFolder%\%ItemID%_chksum.xml"
 %hashdeep% -c md5,sha256 -r -d "%DestinationFolder%\*.*" > "%TempFolder%\%ItemID%_chksum.xml"
 robocopy "%TempFolder%" "%DestinationFolder%" %ItemID%_chksum.xml /MOV
-
-@echo Cleanup temp folder
-:: disabled for testing/debugging
-:: rmdir /s /q "%TempFolder%"

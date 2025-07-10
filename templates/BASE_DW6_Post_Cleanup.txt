@@ -1,0 +1,3 @@
+@echo Cleanup temp folder
+:: disabled for testing/debugging
+:: rmdir /s /q "%TempFolder%"

@@ -42,6 +42,7 @@
 @set "ItemID=%ItemID:~0,17%"
 @set "SourceFolder=%~dp1"
 @set "SourceFolder=%SourceFolder:~0,-1%"
+::
 @set "ArchiveFolder=V:\Pergatory\PRNT\%ItemID:~0,4%\%ItemID:~5,4%\%ItemID:~10,3%\%ItemID:~14,3%\%ItemID:~17,5%"
 @set "DestinationFolder=%SourceFolder%"
 @set "TempFolder=c:\temp\%~n1"
@@ -98,21 +99,23 @@
 ::Run CMD from c:\temp unless otherwise specified
 @cd /d c:\temp
 
+:: Define empty crop variable for images without an XMP sidecar
 SET "crop="
 
-:: set crop parameters if file-level XMP sidecar file exists
-If EXIST %XMPsidecar% (FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaW -s3  %XMPsidecar%') do (SET "RegionAreaW=%%G")
+:: set crop parameters from file-level XMP sidecar file if it exists and image dimensions
+If EXIST %XMPsidecar% (:: Pointless comment to push commands to the next line for readability
+FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaW -s3  %XMPsidecar%') do (SET "RegionAreaW=%%G")
 FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaH -s3  %XMPsidecar%') do (SET "RegionAreaH=%%G")
 FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaX -s3  %XMPsidecar%') do (SET "RegionAreaX=%%G")
 FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaY -s3  %XMPsidecar%') do (SET "RegionAreaY=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -ImageWidth -s3  %XMPsidecar%') do (SET "ImageWidth=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -ImageHeight -s3  %XMPsidecar%') do (SET "ImageHeight=%%G")
+FOR /F "tokens=*" %%G IN ('%exiftool% -ImageWidth -s3  %filepath%') do (SET "ImageWidth=%%G")
+FOR /F "tokens=*" %%G IN ('%exiftool% -ImageHeight -s3  %filepath%') do (SET "ImageHeight=%%G")
 
-:: Call PowerShell to calculate crop string and set the variable
-for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -File %~dp0define_crop.ps1 -RegionAreaW %RegionAreaW% -RegionAreaH %RegionAreaH% -RegionAreaX %RegionAreaX% -RegionAreaY %RegionAreaY% -ImageWidth %ImageWidth% -ImageHeight %ImageHeight%') do set "crop=%%i"
-
+:: Call PowerShell script to calculate crop string and set the variable
+for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -File %~dp0define_crop.ps1 -RegionAreaW !RegionAreaW! -RegionAreaH !RegionAreaH! -RegionAreaX !RegionAreaX! -RegionAreaY !RegionAreaY! -ImageWidth !ImageWidth! -ImageHeight !ImageHeight!') do set "crop=%%i"
 )
 
-%magick% "%filepath%[0]" -auto-orient %crop% -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\%filenameN%.jpg"
+::Crop the image
+%magick% "%filepath%[0]" -auto-orient %crop% -resize %JPEGresize%x%JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\%filenameN%_cropped.jpg"
 
 exit

@@ -20,11 +20,6 @@
    </mwg-rs:RegionList>
   </mwg-rs:Regions>
  </rdf:Description>
- <rdf:Description rdf:about=''
-  xmlns:tiff='http://ns.adobe.com/tiff/1.0/'>
-  <tiff:ImageLength>9939</tiff:ImageLength>
-  <tiff:ImageWidth>9685</tiff:ImageWidth>
- </rdf:Description>
-</rdf:RDF>
+ </rdf:RDF>
 </x:xmpmeta>
 <?xpacket end='w'?>
