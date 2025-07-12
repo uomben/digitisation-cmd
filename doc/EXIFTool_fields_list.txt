@@ -46,7 +46,6 @@ XMP-xmpRights:Owner
 XMP-xmpRights:UsageTerms
 XMP-xmpRights:WebStatement
 XMP-cc:AttributionName
-XMP-cc:AttributionName
 XMP-cc:License
 XMP-cc:Permits
 XMP-cc:Requires
