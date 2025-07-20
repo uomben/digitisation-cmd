@@ -11,8 +11,7 @@
 
 :: Run commands from the source folder
 @echo Rename Images files 
-@%~d1
-@cd "%SourceFolder%"
+@cd / d "%SourceFolder%"
 
 :: Copy source files to Undo folder
 robocopy "%SourceFolder%" "%UndoFolder%" *.* /s /w:5
