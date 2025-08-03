@@ -1,15 +1,15 @@
 
 :: Make Thumbnails for TIF
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_tif\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_tif\%%~na.jpg"
 )
 
 :: Make Thumbnails for PDF
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_pdf\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_pdf\%%~na.jpg"
 )
 
 :: Make Thumbnails for DNG (additional  -auto-level step)
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_dng\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_dng\%%~na.jpg"
 )

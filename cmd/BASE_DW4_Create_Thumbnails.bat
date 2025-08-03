@@ -4,46 +4,49 @@
 :: Customisable processing presets 
 ::=============================================
 
+:: Image derivatives
+@set "resize=10240"
+@set "resample=200"
+
 :: JPEG derivative
-@set "JPEGquality=30"
-@set "JPEGresize=10240"
+@set "jpg_quality=30"
 
 ::Thumbnail
-@set "THUMBresize=512"
-@set "THUMBquality=25"
+@set "thumb_size=512"
+@set "thumb_quality=25"
 
 :: OCR maximum size
-@set "OCRresize=8000"
+@set "ocr_maxsize=8000"
 
-:: PDF display
-@set "PDFquality=35"
+:: PDF 
+@set "pdf_quality=35"
 :: Compress options: 
 :: Colour/Greyscale: JPEG, JPEG2000, ZIP
 :: Bitonal BW: Group4
-@set "PDFcompress=JPEG"
-@set "PDFresample=200"
-@set "PDFresize=3172"
-@set "PDFheight=3172"
+@set "pdf_compress=JPEG"
+@set "pdf_resample=200"
+@set "pdf_resize=3172"
+@set "pdf_height=3172"
 
 ::=============================================
 :: Local variables
 ::=============================================
 :: IDs and folder paths
-@set "ItemID=%~n1"
-@set "SourceFolder=%~1"
-@set "ArchiveFolder=V:\Pergatory\LBRY\%ItemID:~0,2%\%ItemID:~2,2%\%ItemID:~4,2%\%ItemID:~6,2%\%ItemID:~-5%"
-@set "DestinationFolder=%SourceFolder%"
-@set "TempFolder=c:\temp\%~n1"
-@set "OCRin=%TempFolder%\ocr"
-@set "OCRout=%DestinationFolder%"
-@set "SCANin=c:\scans\raw"
-@set "SCANout=c:\scans\export"
-@set "UndoFolder=%~dp1UNDO\%~n1"
+@set "itemid=%~n1"
+@set "in_dir=%~1"
+@set "archive_dir=V:\Pergatory\LBRY\%itemid:~0,2%\%itemid:~2,2%\%itemid:~4,2%\%itemid:~6,2%\%itemid:~-5%"
+@set "out_dir=%in_dir%"
+@set "temp_dir=c:\temp\%~n1"
+@set "ocr_in=%temp_dir%\ocr"
+@set "ocr_out=%out_dir%"
+@set "scan_in=c:\scans\raw"
+@set "scan_out=c:\scans\export"
+@set "undo_dir=%~dp1UNDO\%~n1"
 
 :: Helper files
-@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
-@set "XMPsidecar=%SourceFolder%\%ItemID%.xmp"
-@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
+@set "exif_template=C:\tools\EXIFTool\templates\read_metadata_template.txt"
+@set "xmp_item=%in_dir%\%itemid%.xmp"
+@set "srgb_profile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
 
 ::=============================================
 :: Global variables
@@ -62,38 +65,39 @@
 @set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
 @set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
 @set "vips=C:\Tools\vips\bin\vips.exe"
+@set "vipsheader=C:\Tools\vips\bin\vipsheader.exe"
 @set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
 @set "wget=C:\Tools\wget\wget.exe"
 
 
 :: Display local variables for debugging
 @echo Script variables:
-@echo ItemID            - %ItemID%
-@echo SourceFolder      - %SourceFolder%
-@echo DestinationFolder - %DestinationFolder%
-@echo TempFolder        - %TempFolder%
-@echo SCANin            - %SCANin%
-@echo SCANout           - %SCANout%
-@echo OCRin             - %OCRin%
-@echo OCRout            - %OCRout%
-@echo UndoFolder        - %UndoFolder%
-@echo ArchiveFolder     - %ArchiveFolder%
+@echo itemid        - %itemid%
+@echo in_dir        - %in_dir%
+@echo out_dir       - %out_dir%
+@echo temp_dir      - %temp_dir%
+@echo scan_in       - %scan_in%
+@echo scan_out      - %scan_out%
+@echo ocr_in        - %ocr_in%
+@echo ocr_out       - %ocr_out%
+@echo undo_dir      - %undo_dir%
+@echo archive_dir   - %archive_dir%
 
 ::Run CMD from c:\temp unless otherwise specified
-@c:
-@cd\temp
+
+@cd /d c:\temp
 
 :: Make Thumbnails for TIF
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_tif\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_tif\%%~na.jpg"
 )
 
 :: Make Thumbnails for PDF
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_pdf\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.tif *.pdf /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_pdf\%%~na.jpg"
 )
 
 :: Make Thumbnails for DNG (additional  -auto-level step)
-for /f "tokens=*" %%a in  ('robocopy "%DestinationFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -auto-level -resize %THUMBresize%^> -unsharp 0x1 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %THUMBquality% "%DestinationFolder%\thumb_dng\%%~na.jpg"
+for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+    %magick% "%%a[0]" -auto-orient -auto-level -resize %thumb_size%^> -unsharp 0x1 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %thumb_quality% "%out_dir%\thumb_dng\%%~na.jpg"
 )

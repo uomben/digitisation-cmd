@@ -1,8 +1,6 @@
 @setlocal ENABLEDELAYEDEXPANSION
 :: This script crops an image using the coordinates read from an XMP sidecar file.  If no sidecar file exists the full size image is processed.
 :: Drag and drop source is an image file.
-:: Crop parameter calculated in a powershell script (define_crop.ps1) because of limitations with using more than one field in a calculation with EXIFTool.
-:: Requires define_crop.ps1 to be in the same location as the batch file.
 :: Crop variables stored as xmp-mwg-rs (normalised percentages) and converted to pixel coordinates for all values as Imagemagick requires pixels for the crop offset.
 
 ::=============================================
@@ -10,53 +8,52 @@
 ::=============================================
 
 :: JPEG derivative
-@set "JPEGquality=65"
-@set "JPEGresize=2048"
+@set "resize=2048"
+@set "jpg_quality=65"
 
 ::Thumbnail
-@set "THUMBresize=512"
-@set "THUMBquality=25"
+@set "thumb_size=512"
+@set "thumb_quality=25"
 
 :: OCR maximum size
-@set "OCRresize=8000"
+@set "ocr_maxsize=8000"
 
 :: PDF display
-@set "PDFquality=35"
+@set "pdf_quality=35"
 :: Compress options: 
 :: Colour/Greyscale: JPEG, JPEG2000, ZIP
 :: Bitonal BW: Group4
-@set "PDFcompress=JPEG"
-@set "PDFresample=200"
-@set "PDFresize=3172"
-@set "PDFheight=3172"
+@set "pdf_compress=JPEG"
+@set "pdf_resample=200"
+@set "pdf_resize=3172"
+@set "pdf_height=3172"
 
 ::=============================================
 :: Local variables
 ::=============================================
 :: IDs and folder paths
-@set "ItemID=%~n1"
-@set "filepath=%1"
-@set "filenameN=%~n1"
+@set "itemid=%~n1"
+@set "in_file=%1"
+@set "in_fileN=%~n1"
 
-
-@set "ItemID=%ItemID:~0,17%"
-@set "SourceFolder=%~dp1"
-@set "SourceFolder=%SourceFolder:~0,-1%"
+@set "itemid=%itemid:~0,17%"
+@set "in_dir=%~dp1"
+@set "in_dir=%in_dir:~0,-1%"
 ::
-@set "ArchiveFolder=V:\Pergatory\PRNT\%ItemID:~0,4%\%ItemID:~5,4%\%ItemID:~10,3%\%ItemID:~14,3%\%ItemID:~17,5%"
-@set "DestinationFolder=%SourceFolder%"
-@set "TempFolder=c:\temp\%~n1"
-@set "OCRin=%TempFolder%\ocr"
-@set "OCRout=%DestinationFolder%"
-@set "SCANin=c:\scans\raw"
-@set "SCANout=c:\scans\export"
-@set "UndoFolder=%~dp1UNDO\%~n1"
+@set "archive_dir=V:\Pergatory\PRNT\%itemid:~0,4%\%itemid:~5,4%\%itemid:~10,3%\%itemid:~14,3%\%itemid:~17,5%"
+@set "out_dir=%in_dir%"
+@set "temp_dir=c:\temp\%~n1"
+@set "ocr_in=%temp_dir%\ocr"
+@set "ocr_out=%out_dir%"
+@set "scan_in=c:\scans\raw"
+@set "scan_out=c:\scans\export"
+@set "undo_dir=%~dp1UNDO\%~n1"
 
 :: Helper files
-@set "EXIFReadTemplate=C:\tools\EXIFTool\templates\read_metadata_template.txt"
-@set "sidecar=%1"
-@set "XMPsidecar=%~dpn1.xmp"
-@set "sRGBprofile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
+@set "exif_template=C:\tools\EXIFTool\templates\read_metadata_template.txt"
+@set "xmp_file=%~dpn1.xmp"
+@set "xmp_item=%archive_dir%\%itemid%-item.xmp"
+@set "srgb_profile=c:\tools\srgb\sRGB_v4_ICC_preference.icc"
 
 ::=============================================
 :: Global variables
@@ -75,47 +72,40 @@
 @set "qpdf=C:\Tools\qpdf\bin\qpdf.exe"
 @set "tesseract=C:\Tools\Tesseract\Tesseract.exe"
 @set "vips=C:\Tools\vips\bin\vips.exe"
+@set "vipsheader=C:\Tools\vips\bin\vipsheader.exe"
 @set "vipsthumbnail=C:\Tools\vips\bin\vipsthumbnail.exe"
 @set "wget=C:\Tools\wget\wget.exe"
-
-
-:: Display local variables for debugging
-@echo Script variables:
-@echo ItemID            - %ItemID%
-@echo SourceFolder      - %SourceFolder%
-@echo DestinationFolder - %DestinationFolder%
-@echo TempFolder        - %TempFolder%
-@echo SCANin            - %SCANin%
-@echo SCANout           - %SCANout%
-@echo OCRin             - %OCRin%
-@echo OCRout            - %OCRout%
-@echo UndoFolder        - %UndoFolder%
-@echo ArchiveFolder     - %ArchiveFolder%
-@echo Filepath          - %filepath%
-@echo FilenameID        - %filenameN%
-@echo XMP sidecar       - %XMPsidecar%
-
 
 ::Run CMD from c:\temp unless otherwise specified
 @cd /d c:\temp
 
+::=============================================
+:: Begin script
+::=============================================
+
 :: Define empty crop variable for images without an XMP sidecar
-SET "crop="
+IF NOT EXIST %xmp_file% ( SET "im_crop="
+) ELSE (
+   :: set crop parameters from file-level XMP sidecar file if it exists and image dimensions
+   FOR /F "tokens=*" %%G IN ('%exiftool% -ImageWidth -s3  %in_file%') do (SET "ImageWidth=%%G")
+   FOR /F "tokens=*" %%G IN ('%exiftool% -ImageHeight -s3  %in_file%') do (SET "ImageHeight=%%G")
+   FOR /F "tokens=*" %%G IN ('%exiftool% -p "${RegionAreaW;$_*=!Imagewidth!}" %xmp_file%') do (SET  /a "RegionAreaW=%%G")
+   FOR /F "tokens=*" %%G IN ('%exiftool% -p "${RegionAreaH;$_*=!ImageHeight!}" %xmp_file%') do (SET  /a "RegionAreaH=%%G")
+   FOR /F "tokens=*" %%G IN ('%exiftool% -p "${RegionAreaX;$_*=!Imagewidth!}" %xmp_file%') do (SET  /a "RegionAreaX=%%G")
+   FOR /F "tokens=*" %%G IN ('%exiftool% -p "${RegionAreaY;$_*=!ImageHeight!}" %xmp_file%') do (SET  /a "RegionAreaY=%%G")
 
-:: set crop parameters from file-level XMP sidecar file if it exists and image dimensions
-If EXIST %XMPsidecar% (:: Pointless comment to push commands to the next line for readability
-FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaW -s3  %XMPsidecar%') do (SET "RegionAreaW=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaH -s3  %XMPsidecar%') do (SET "RegionAreaH=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaX -s3  %XMPsidecar%') do (SET "RegionAreaX=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -RegionAreaY -s3  %XMPsidecar%') do (SET "RegionAreaY=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -ImageWidth -s3  %filepath%') do (SET "ImageWidth=%%G")
-FOR /F "tokens=*" %%G IN ('%exiftool% -ImageHeight -s3  %filepath%') do (SET "ImageHeight=%%G")
+   set /a "OffsetX=(!RegionAreaX! * 2 - !RegionAreaW!) / 2"
+   set /a "OffsetY=(!RegionAreaY! * 2 - !RegionAreaH!) / 2"
 
-:: Call PowerShell script to calculate crop string and set the variable
-for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -File %~dp0define_crop.ps1 -RegionAreaW !RegionAreaW! -RegionAreaH !RegionAreaH! -RegionAreaX !RegionAreaX! -RegionAreaY !RegionAreaY! -ImageWidth !ImageWidth! -ImageHeight !ImageHeight!') do set "crop=%%i"
+   set "im_crop=-crop !RegionAreaW!x!RegionAreaH!+!OffsetX!+!OffsetY!"
 )
 
 ::Crop the image
-%magick% "%filepath%[0]" -auto-orient %crop% -resize %JPEGresize%x%JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\%filenameN%_cropped.jpg"
+%magick% "%in_file%[0]" -auto-orient %im_crop% -resize %resize%x%resize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %jpg_quality% "%out_dir%\%in_fileN%.jpg"
+
+::Update the metadata
+if exist "%xmp_item%" (
+%exiftool% -tagsfromfile "%xmp_item%" -all:all -overwrite_original "%out_dir%\%in_fileN%_%resize%.jpg"
+)
 
 exit

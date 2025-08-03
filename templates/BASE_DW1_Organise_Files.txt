@@ -1,70 +1,70 @@
 
 :: Remove unwanted files
-@rmdir /s /q "%SourceFolder%\Color" 2> nul
-@rmdir /s /q "%SourceFolder%\thumb" 2> nul
-@rmdir /s /q "%SourceFolder%\tmpFilename" 2> nul
-@rmdir /s /q "%SourceFolder%\undo" 2> nul
-@del "%SourceFolder%\*.OIP" 2> nul
-@del "%SourceFolder%\*.OIS" 2> nul
-@del "%SourceFolder%\*.OJP" 2> nul
-@del "%SourceFolder%\*.OJS" 2> nul
+@rmdir /s /q "%in_dir%\Color" 2> nul
+@rmdir /s /q "%in_dir%\thumb" 2> nul
+@rmdir /s /q "%in_dir%\tmpFilename" 2> nul
+@rmdir /s /q "%in_dir%\undo" 2> nul
+@del "%in_dir%\*.OIP" 2> nul
+@del "%in_dir%\*.OIS" 2> nul
+@del "%in_dir%\*.OJP" 2> nul
+@del "%in_dir%\*.OJS" 2> nul
 
 :: Run commands from the source folder
 @echo Rename Images files 
-@cd / d "%SourceFolder%"
+@cd / d "%in_dir%"
 
 :: Copy source files to Undo folder
-robocopy "%SourceFolder%" "%UndoFolder%" *.* /s /w:5
+robocopy "%in_dir%" "%undo_dir%" *.* /s /w:5
 
 @echo Rename TIF files
 @set /a counter=1
 @set counterFormatted=0001
-@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
+@for /f "tokens=*" %%f in ('robocopy "%in_dir%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
   @set counterFormatted=0000!counter!
-  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.tif"
+  @rename "%%f" "%itemid%-!counterFormatted:~-5!.tif"
   @set /a counter = !counter! + 1
 )
 
 @echo Rename DNG files
 @set /a counter=1
 @set counterFormatted=00001
-@for /f "tokens=*" %%f in ('robocopy "%SourceFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
+@for /f "tokens=*" %%f in ('robocopy "%in_dir%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do @(
   @set counterFormatted=0000!counter!
-  @rename "%%f" "%ItemID%-!counterFormatted:~-5!.dng"
+  @rename "%%f" "%itemid%-!counterFormatted:~-5!.dng"
   @set /a counter = !counter! + 1
 )
 
 @echo Rename JPG files
 @set /a counter=1
 @set counterFormatted=00001
-@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+@for /f "tokens=*" %%F in ('robocopy "%in_dir%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
   @set counterFormatted=0000!counter!
-  @rename "%%F" "%ItemID%-!counterFormatted:~-5!.jpg"
+  @rename "%%F" "%itemid%-!counterFormatted:~-5!.jpg"
   @set /a counter = !counter! + 1
 )
 :: Relocate files and embed metadata
 @echo Move images into subfolders by filetype AND embed metadata from XMP sidecar file if the sidecar file exists
 
 :: Move TIFs
-@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
-  @IF NOT EXIST "%DestinationFolder%\tif" (mkdir "%DestinationFolder%\tif")
-  IF EXIST "%XMPsidecar%" (
-     %exiftool% -directory="%DestinationFolder%\tif" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
-	 move %%F "%DestinationFolder%\tif" )
+@for /f "tokens=*" %%F in ('robocopy "%in_dir%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%out_dir%\tif" (mkdir "%out_dir%\tif")
+  IF EXIST "%xmp_item%" (
+     %exiftool% -directory="%out_dir%\tif" -TagsFromFile "%xmp_item%" -overwrite_original %%F ) ELSE (
+	 move %%F "%out_dir%\tif" )
   )
   
 :: Move JPGs
-@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
-  @IF NOT EXIST "%DestinationFolder%\jpg" (mkdir "%DestinationFolder%\jpg")
-  IF EXIST "%XMPsidecar%" (
-     %exiftool% -directory="%DestinationFolder%\jpg" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
-	 move %%F "%DestinationFolder%\jpg" )
+@for /f "tokens=*" %%F in ('robocopy "%in_dir%" NULL *.jpg /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%out_dir%\jpg" (mkdir "%out_dir%\jpg")
+  IF EXIST "%xmp_item%" (
+     %exiftool% -directory="%out_dir%\jpg" -TagsFromFile "%xmp_item%" -overwrite_original %%F ) ELSE (
+	 move %%F "%out_dir%\jpg" )
   )
 
 :: Move DNGs
-@for /f "tokens=*" %%F in ('robocopy "%SourceFolder%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
-  @IF NOT EXIST "%DestinationFolder%\dng" (mkdir "%DestinationFolder%\dng")
-  IF EXIST "%XMPsidecar%" (
-     %exiftool% -directory="%DestinationFolder%\dng" -TagsFromFile "%XMPsidecar%" -overwrite_original %%F ) ELSE (
-	 move %%F "%DestinationFolder%\dng" )
+@for /f "tokens=*" %%F in ('robocopy "%in_dir%" NULL *.dng /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') do (
+  @IF NOT EXIST "%out_dir%\dng" (mkdir "%out_dir%\dng")
+  IF EXIST "%xmp_item%" (
+     %exiftool% -directory="%out_dir%\dng" -TagsFromFile "%xmp_item%" -overwrite_original %%F ) ELSE (
+	 move %%F "%out_dir%\dng" )
   )

@@ -86,8 +86,6 @@
 ::Run CMD from c:\temp unless otherwise specified
 
 @cd /d c:\temp
-
-:: Make JPEG derivatives
-for /f "tokens=*" %%a in  ('robocopy "%out_dir%" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
-    %magick% "%%a[0]" -auto-orient -resize %resize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality %jpg_quality% "%out_dir%\jpg\%%~na.jpg"
-)
+@echo Cleanup temp folder
+:: disabled for testing/debugging
+:: rmdir /s /q "%temp_dir%"

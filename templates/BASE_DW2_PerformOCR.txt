@@ -2,63 +2,63 @@
 :: OCR processes
 
 :: Prepare temp and output directory
-@mkdir %OCRin%  2> nul
-@mkdir %OCRout%  2> nul
+@mkdir %ocr_in%  2> nul
+@mkdir %ocr_out%  2> nul
 
-for /f "tokens=*" %%a in  ('robocopy "%SourceFolder%\tif" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
+for /f "tokens=*" %%a in  ('robocopy "%in_dir%\tif" NULL *.tif /S /L /NDL /NC /TEE /NJH /NJS /NODD /NS') DO (
 :: Clean BW image for OCR
-%magick% ^( "%%a[0]" -auto-orient -colorspace gray -type grayscale -contrast-stretch 0 ^) ^( -clone 0 -colorspace gray -negate -lat 15x15+10%% -contrast-stretch 0 ^) -compose copy_opacity -composite -fill "white" -opaque none -alpha Off -sharpen 0x1 "%OCRin%\%%~na_bw.tif"
+%magick% ^( "%%a[0]" -auto-orient -colorspace gray -type grayscale -contrast-stretch 0 ^) ^( -clone 0 -colorspace gray -negate -lat 15x15+10%% -contrast-stretch 0 ^) -compose copy_opacity -composite -fill "white" -opaque none -alpha Off -sharpen 0x1 "%ocr_in%\%%~na_bw.tif"
 
 :: OCR image - PDF is text only, no image
-%tesseract% "%OCRin%\%%~na_bw.tif" "%OCRin%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
+%tesseract% "%ocr_in%\%%~na_bw.tif" "%ocr_in%\%%~na" --psm 3 -c textonly_pdf=1 pdf txt alto hocr
 
 :: Make Colour Image PDF for display - set output size/quality here
-%magick% "%%a[0]" -auto-orient -resample %PDFresample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality 35 "%OCRin%\%%~na_img.pdf"
+%magick% "%%a[0]" -auto-orient -resample %pdf_resample% -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%srgb_profile%" -depth 8 -compress JPEG -quality 35 "%ocr_in%\%%~na_img.pdf"
 
 :: Make BW Image PDF for display - set output size/quality here
-%magick% "%OCRin%\%%~na_bw.tif" -threshold 50 -depth 1 -compress Group4 "%OCRin%\%%~na_bw.pdf"
+%magick% "%ocr_in%\%%~na_bw.tif" -threshold 50 -depth 1 -compress Group4 "%ocr_in%\%%~na_bw.pdf"
 
 :: Merge text and colour image PDF
-%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_img.pdf" output "%OCRin%\%%~na_merged.pdf"
+%pdftk% "%ocr_in%\%%~na.pdf" background "%ocr_in%\%%~na_img.pdf" output "%ocr_in%\%%~na_merged.pdf"
 
 :: Merge text and BW image PDF
-%pdftk% "%OCRin%\%%~na.pdf" background "%OCRin%\%%~na_bw.pdf" output "%OCRin%\%%~na_merged_bw.pdf"
+%pdftk% "%ocr_in%\%%~na.pdf" background "%ocr_in%\%%~na_bw.pdf" output "%ocr_in%\%%~na_merged_bw.pdf"
 
 )
 @echo Merge Colour and BW PDF pages
-%pdftk% "%OCRin%\%ItemID%*_merged.pdf" cat output "%OCRin%\%ItemID%_combined.pdf" dont_ask
-%pdftk% "%OCRin%\%ItemID%*_merged_bw.pdf" cat output "%OCRin%\%ItemID%_combined_bw.pdf" dont_ask
+%pdftk% "%ocr_in%\%itemid%*_merged.pdf" cat output "%ocr_in%\%itemid%_combined.pdf" dont_ask
+%pdftk% "%ocr_in%\%itemid%*_merged_bw.pdf" cat output "%ocr_in%\%itemid%_combined_bw.pdf" dont_ask
 
 @echo Embed metadata in merged PDF files from XMP
-IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined.pdf" 
-IF EXIST %XMPsidecar% %exiftool% -tagsFromFile "%XMPsidecar%" -overwrite_original "%OCRin%\%ItemID%_combined_bw.pdf" 
+IF EXIST %xmp_item% %exiftool% -tagsFromFile "%xmp_item%" -overwrite_original "%ocr_in%\%itemid%_combined.pdf" 
+IF EXIST %xmp_item% %exiftool% -tagsFromFile "%xmp_item%" -overwrite_original "%ocr_in%\%itemid%_combined_bw.pdf" 
 
 @echo Linearise PDF 
 :: ...without stripping the newly added metadata!!!
-%qpdf%  --linearize "%OCRin%\%ItemID%_combined.pdf" "%OCRout%\%ItemID%.pdf"
-%qpdf%  --linearize "%OCRin%\%ItemID%_bw_combined.pdf" "%OCRout%\%ItemID%_bw.pdf"
+%qpdf%  --linearize "%ocr_in%\%itemid%_combined.pdf" "%ocr_out%\%itemid%.pdf"
+%qpdf%  --linearize "%ocr_in%\%itemid%_bw_combined.pdf" "%ocr_out%\%itemid%_bw.pdf"
 
 @echo Make thumbnail of PDF
 :: Relocated to Create Derivatives sub-template
 
-robocopy "%TempFolder%" "%DestinationFolder%\thumb_pdf" "%ItemID%.jpg" /MOV /W:5
+robocopy "%temp_dir%" "%out_dir%\thumb_pdf" "%itemid%.jpg" /MOV /W:5
 
 @echo Move non-image outputs into filetype-based subfolders
 
-%exiftool% -directory="%OCRout%\%ItemID%_alto_xml" -overwrite_original "%OCRin%\*.xml" 
-%exiftool% -directory="%OCRout%\%ItemID%_txt" -overwrite_original "%OCRin%\*.txt" 
-%exiftool% -directory="%OCRout%\%ItemID%_hocr" -overwrite_original "%OCRin%\*.hocr"
+%exiftool% -directory="%ocr_out%\%itemid%_alto_xml" -overwrite_original "%ocr_in%\*.xml" 
+%exiftool% -directory="%ocr_out%\%itemid%_txt" -overwrite_original "%ocr_in%\*.txt" 
+%exiftool% -directory="%ocr_out%\%itemid%_hocr" -overwrite_original "%ocr_in%\*.hocr"
 
 @echo Create a composite text file
-@del "%DestinationFolder%\%ItemID%_ocr.txt" 2> nul
-FOR %%f IN ("%OCRout%\%ItemID%_txt\*.txt") DO type %%f >> "%OCRout%\%ItemID%_ocr.txt"
+@del "%out_dir%\%itemid%_ocr.txt" 2> nul
+FOR %%f IN ("%ocr_out%\%itemid%_txt\*.txt") DO type %%f >> "%ocr_out%\%itemid%_ocr.txt"
 
 
 @echo Cleanup temporary files
 
 :: uncomment goto to skip cleanup during testing to allow checking of intermediate files
 :: goto skipcleanup
-rmdir /s /q %OCRin%
+rmdir /s /q %ocr_in%
 
 :skipcleanup
 
