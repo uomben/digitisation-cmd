@@ -52,7 +52,7 @@
 :: Global variables
 ::=============================================
 :: Utililty paths
-@set "7zip=C:\Tools\7zip\7za.exe"
+@set "zip=C:\Tools\7zip\7za.exe"
 @set "b64=C:\Tools\b64\b64.exe"
 @set "exiftool=c:\Tools\EXIFTool\EXIFTool.exe"
 @set "ffmpeg=C:\Tools\ffmpeg\bin\ffmpeg.exe"
