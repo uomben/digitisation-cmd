@@ -1,19 +1,51 @@
 Basic image resize, converting to sRGB with image magick
 ========================================================
-%magick% "%filepath%" -auto-orient -resize %JPEGresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%sRGBprofile%" -depth 8 -compress JPEG -quality %JPEGquality% "%DestinationFolder%\jpg\%filenameN%.jpg"
+%magick% "%filepath%" -auto-orient -resize %jpegresize%^> -unsharp 1.5x1+0.7+0.02 -colorspace sRGB -profile "%srgbprofile%" -depth 8 -compress JPEG -quality %jpegquality% "%DestinationFolder%\jpg\%filenameN%.jpg"
+
+Get image dimensions
+================================================
+
+::Get image specs with VIPSHeader
+for /f %%A in ('vipsheader -f width "%~1"') do set "image_width=%%A"
+for /f %%A in ('vipsheader -f height "%~1"') do set "image_height=%%A"
+
+::Get image specs with EXIFTool
+for /f %%A in ('%exiftool% -image_width -s3  "%filepath%"') do (SET "image_width=%%A")
+for /f %%A in ('%exiftool% -image_height -s3  "%filepath%"') do (SET "image_height=%%A")
 
 Calculate a scale factor to resize to a fixed pixel count/File size
 ===================================================================
 
-@echo off
-::Get image specs with VIPSHeader
-set imagewidth=YOUR_WIDTH
-set imageheight=YOUR_HEIGHT
+:: Calculate scale for downsizing BigTIFF images
+for /f "usebackq delims=" %%A in (`powershell -nologo -command "($target=1296000000)/(%image_width% * %image_height%)"`) do set "image_scale=%%A"
 
-::Get image specs with EXIFTool
-set imagewidth=YOUR_WIDTH
-set imageheight=YOUR_HEIGHT
+::Resize image
+vips resize "%in_file%" "%out_file%" %image_scale%
 
-:: Calculate scale using PowerShell
-for /f "usebackq delims=" %%A in (`powershell -nologo -command "($target=1296000000)/(%imagewidth% * %imageheight%)"`) do set scale=%%A
-echo Scale factor: %scale%
+Calculate a scale factor to resize to a fixed height/width (px)
+===================================================================
+set "targetsize=NNNN"
+
+:: Determine longest side
+if %image_width% GTR %image_height% (
+    set /a image_max=%image_width%
+) else (
+    set /a image_max=%image_height%
+)
+
+set /a scale=%targetsize% * 10000 / %image_max%
+
+::Only resize the image if it larger than the target size.
+if %image_max% GTR %targetsize% (
+
+:: Convert scale to decimal
+set /a intPart=%scale% / 10000
+set /a fracPart=%scale% %% 10000
+set scale=%intPart%.%fracPart%
+
+::resize the image
+) else (
+::don't resize the image 
+)
+
+

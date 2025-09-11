@@ -35,6 +35,9 @@
 @set "itemid=%~n1"
 @set "in_dir=%~1"
 @set "archive_dir=V:\Pergatory\LBRY\%itemid:~0,2%\%itemid:~2,2%\%itemid:~4,2%\%itemid:~6,2%\%itemid:~-5%"
+@set "log_dir=c:\temp\log"
+@If not exist %log_dir% (mkdir %log_dir%)
+@set "logfile=%log_dir%\&~n0.log%
 @set "out_dir=%in_dir%"
 @set "temp_dir=c:\temp\%~n1"
 @set "ocr_in=%temp_dir%\ocr"
